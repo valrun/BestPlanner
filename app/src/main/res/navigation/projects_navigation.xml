@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/projects_navigation"
+    app:startDestination="@id/projectsFragment"
+    tools:ignore="UnusedNavigation">
+    <fragment
+        android:id="@+id/projectsFragment"
+        android:name="com.example.bestplanner.fragments.projectsFragment"
+        android:label="projectsFragment"
+        tools:layout="@layout/fragment_projects">
+        <action
+            android:id="@+id/action_projects_to_new"
+            app:destination="@id/projectsFragment" />
+    </fragment>
+</navigation>

@@ -10,23 +10,25 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.room.Room
-//import com.example.coroutines.datebase.AppDatabase
-//import com.example.coroutines.list.ItemAdapter
+import com.example.bestplanner.calendarList.CalendarDatabase
+import com.example.bestplanner.calendarList.TimeItem
+import com.example.bestplanner.calendarList.TimeItemAdapter
 import kotlinx.coroutines.*
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.io.IOException
+import java.sql.Time
 
 class MyApp : Application() {
     private lateinit var mRetrofit: Retrofit
     private lateinit var mService: ServiceInterface
-    var mAdapter: ItemAdapter? = null
+    var mAdapter: TimeItemAdapter? = null
 
-    private lateinit var mDateBase: AppDatabase
+    private lateinit var mDateBase: CalendarDatabase
     private var mSharedPreference: SharedPreferences? = null
     private var emptyBase: Boolean = true
 
-    var listItems: MutableList<Item> = mutableListOf()
+    var listItems: MutableList<TimeItem> = mutableListOf()
     private var indexOfNewItem = 0
 
     var textView: TextView? = null
@@ -46,7 +48,7 @@ class MyApp : Application() {
         emptyBase = this.mSharedPreference?.getBoolean(EMPTY, true) ?: true
         mDateBase = Room.databaseBuilder(
             applicationContext,
-            AppDatabase::class.java, "database"
+            CalendarDatabase::class.java, "database"
         ).build()
     }
 
@@ -56,7 +58,7 @@ class MyApp : Application() {
         if (emptyBase) {
             try {
                 scope.launch {
-                    var result = arrayListOf<Item>()
+                    var result = arrayListOf<TimeItem>()
 
                     try {
                         result = mService.getPosts()
@@ -75,7 +77,7 @@ class MyApp : Application() {
                             indexOfNewItem = it.id + 1
                         }
                     }
-                    mDateBase.itemDao()?.insertItems(listItems)
+                    mDateBase.timeItemDao()?.insertItems(listItems)
                     emptyBase = false
                     mSharedPreference?.edit()?.apply {
                         this.putBoolean(EMPTY, emptyBase)
@@ -90,7 +92,7 @@ class MyApp : Application() {
         } else {
             try {
                 scope.launch {
-                    val data = mDateBase.itemDao()?.getItems() as MutableList<Item>
+                    val data = mDateBase.timeItemDao()?.getItems() as MutableList<TimeItem>
                     data.forEach { listItems.add(it) }
                     listItems.forEach {
                         if (indexOfNewItem < it.id + 1) {
@@ -127,7 +129,7 @@ class MyApp : Application() {
                     }
                     index++
                 }
-                mDateBase.itemDao()?.deleteByID(index)
+                mDateBase.timeItemDao()?.deleteByID(index)
                 listItems.removeAt(index)
                 withContext(Dispatchers.Main) {
                     mAdapter?.notifyDataSetChanged()
@@ -141,19 +143,20 @@ class MyApp : Application() {
     }
 
     fun addItem(title: String, text: String, scope: LifecycleCoroutineScope) {
-        val item = Item(indexOfNewItem, title, text, 0)
+//        val timeItem = TimeItem(indexOfNewItem, title, text, 0)
+        val timeItem = TimeItem(indexOfNewItem, title, Time(0))
         try {
             scope.launch {
                 try {
-                    mService.addPost(item)
+                    mService.addPost(timeItem)
                 } catch (e: IOException) {
                     withContext(Dispatchers.Main) {
                         e.message?.let { toast(it) }
                     }
                 }
 
-                listItems.add(item)
-                mDateBase.itemDao()?.insertItem(item)
+                listItems.add(timeItem)
+                mDateBase.timeItemDao()?.insertItem(timeItem)
                 withContext(Dispatchers.Main) {
                     mAdapter?.notifyDataSetChanged()
                 }
@@ -170,7 +173,7 @@ class MyApp : Application() {
         startLoadAnimation()
         try {
             scope.launch {
-                var result = arrayListOf<Item>()
+                var result = arrayListOf<TimeItem>()
 
                 try {
                     result = mService.getPosts()
@@ -187,8 +190,8 @@ class MyApp : Application() {
                     mAdapter?.notifyDataSetChanged()
                 }
 
-                mDateBase.itemDao()?.deleteAll()
-                mDateBase.itemDao()?.insertItems(listItems)
+                mDateBase.timeItemDao()?.deleteAll()
+                mDateBase.timeItemDao()?.insertItems(listItems)
                 emptyBase = false
                 mSharedPreference?.edit()?.apply {
                     this.putBoolean(EMPTY, emptyBase)
@@ -210,7 +213,7 @@ class MyApp : Application() {
     private fun startLoadAnimation() {
         textView?.visibility = View.VISIBLE
         if (animatorSet == null) {
-            animatorSet = AnimatorInflater.loadAnimator(this, R.animator.load) as AnimatorSet
+//            animatorSet = AnimatorInflater.loadAnimator(this, R.animator.load) as AnimatorSet
             animatorSet!!.setTarget(textView)
         }
         animatorSet!!.start()

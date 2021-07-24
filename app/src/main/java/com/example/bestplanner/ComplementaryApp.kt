@@ -1,6 +1,5 @@
 package com.example.bestplanner
 
-import android.animation.AnimatorInflater
 import android.animation.AnimatorSet
 import android.app.Application
 import android.content.Context
@@ -11,17 +10,19 @@ import android.widget.Toast
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.room.Room
 import com.example.bestplanner.calendarList.CalendarDatabase
+import com.example.bestplanner.calendarList.CalendarServiceInterface
 import com.example.bestplanner.calendarList.TimeItem
 import com.example.bestplanner.calendarList.TimeItemAdapter
 import kotlinx.coroutines.*
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.io.IOException
-import java.sql.Time
 
-class MyApp : Application() {
+class ComplementaryApp : Application() {
+    private lateinit var scope: LifecycleCoroutineScope
+
     private lateinit var mRetrofit: Retrofit
-    private lateinit var mService: ServiceInterface
+    private lateinit var mCalendarService: CalendarServiceInterface
     var mAdapter: TimeItemAdapter? = null
 
     private lateinit var mDateBase: CalendarDatabase
@@ -42,7 +43,7 @@ class MyApp : Application() {
             .baseUrl("https://jsonplaceholder.typicode.com")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-        mService = mRetrofit.create(ServiceInterface::class.java)
+        mCalendarService = mRetrofit.create(CalendarServiceInterface::class.java)
 
         mSharedPreference = getSharedPreferences("take", Context.MODE_PRIVATE)
         emptyBase = this.mSharedPreference?.getBoolean(EMPTY, true) ?: true
@@ -52,8 +53,15 @@ class MyApp : Application() {
         ).build()
     }
 
-    fun loadItems(scope: LifecycleCoroutineScope) {
-        startLoadAnimation()
+    fun setScope(scope: LifecycleCoroutineScope) {
+        this.scope = scope
+    }
+    fun getScope() : LifecycleCoroutineScope{
+        return scope
+    }
+
+    fun loadItems() {
+//        startLoadAnimation()
 
         if (emptyBase) {
             try {
@@ -61,7 +69,7 @@ class MyApp : Application() {
                     var result = arrayListOf<TimeItem>()
 
                     try {
-                        result = mService.getPosts()
+                        result = mCalendarService.getPosts()
                     } catch (e: IOException) {
                         withContext(Dispatchers.Main) {
                             e.message?.let { toast(it) }
@@ -111,11 +119,11 @@ class MyApp : Application() {
         }
     }
 
-    fun deleteItem(id: Int, scope : CoroutineScope) {
+    fun deleteItem(id: Int) {
         try {
             scope.launch {
                 try {
-                    mService.deletePost(id)
+                    mCalendarService.deletePost(id)
                 } catch (e: IOException) {
                     withContext(Dispatchers.Main) {
                         e.message?.let { toast(it) }
@@ -142,13 +150,13 @@ class MyApp : Application() {
         }
     }
 
-    fun addItem(title: String, text: String, scope: LifecycleCoroutineScope) {
+    fun addItem(title: String, text: String) {
 //        val timeItem = TimeItem(indexOfNewItem, title, text, 0)
-        val timeItem = TimeItem(indexOfNewItem, title, Time(0))
+        val timeItem = TimeItem(indexOfNewItem, title, 0)
         try {
             scope.launch {
                 try {
-                    mService.addPost(timeItem)
+                    mCalendarService.addPost(timeItem)
                 } catch (e: IOException) {
                     withContext(Dispatchers.Main) {
                         e.message?.let { toast(it) }
@@ -169,14 +177,14 @@ class MyApp : Application() {
         }
     }
 
-    fun update(scope: LifecycleCoroutineScope) {
+    fun update() {
         startLoadAnimation()
         try {
             scope.launch {
                 var result = arrayListOf<TimeItem>()
 
                 try {
-                    result = mService.getPosts()
+                    result = mCalendarService.getPosts()
                 } catch (e: IOException) {
                     withContext(Dispatchers.Main) {
                         e.message?.let { toast(it) }
@@ -209,12 +217,11 @@ class MyApp : Application() {
         textView?.visibility = View.INVISIBLE
         animatorSet?.end()
     }
-
     private fun startLoadAnimation() {
         textView?.visibility = View.VISIBLE
         if (animatorSet == null) {
 //            animatorSet = AnimatorInflater.loadAnimator(this, R.animator.load) as AnimatorSet
-            animatorSet!!.setTarget(textView)
+//            animatorSet!!.setTarget(textView)
         }
         animatorSet!!.start()
     }
@@ -228,7 +235,7 @@ class MyApp : Application() {
     }
 
     companion object {
-        lateinit var instance: MyApp
+        lateinit var instance: ComplementaryApp
         const val EMPTY = "true"
     }
 }

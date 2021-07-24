@@ -3,6 +3,7 @@ package com.example.bestplanner
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.coroutineScope
 import androidx.navigation.NavController
 import com.example.android.navigationadvancedsample.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -17,6 +18,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         setupBottomNavigation()
+        ComplementaryApp.instance.setScope(lifecycle.coroutineScope)
 
         if (savedInstanceState != null) {
             bottomNavigationView.selectedItemId = savedInstanceState.getInt(lastId)

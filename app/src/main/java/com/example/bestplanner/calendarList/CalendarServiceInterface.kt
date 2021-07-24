@@ -1,10 +1,10 @@
-package com.example.bestplanner
+package com.example.bestplanner.calendarList
 
 import com.example.bestplanner.calendarList.TimeItem
 import okhttp3.ResponseBody
 import retrofit2.http.*
 
-interface ServiceInterface {
+interface CalendarServiceInterface {
     @GET("/posts")
     suspend fun getPosts(): ArrayList<TimeItem>
 

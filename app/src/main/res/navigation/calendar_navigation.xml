@@ -7,7 +7,7 @@
     tools:ignore="UnusedNavigation">
     <fragment
         android:id="@+id/calendarFragment"
-        android:name="com.example.bestplanner.fragments.calendarFragment"
+        android:name="com.example.bestplanner.fragments.CalendarFragment"
         android:label="calendarFragment"
         tools:layout="@layout/fragment_calendar">
         <action

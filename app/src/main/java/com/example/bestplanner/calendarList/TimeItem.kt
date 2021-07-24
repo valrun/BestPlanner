@@ -9,4 +9,4 @@ import java.sql.Time
 data class TimeItem(
         @PrimaryKey() val id: Int,
         @ColumnInfo(name = "title") val title: String?,
-        @ColumnInfo(name = "startTime") val startTime: Time)
+        @ColumnInfo(name = "startTime") val startTime: Long)
